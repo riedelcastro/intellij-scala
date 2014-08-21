@@ -121,6 +121,8 @@ object WorksheetSourceProcessorWithHTML {
       """.stripMargin
     val objectRes = new StringBuilder(s"def main($runPrinterName: Any) { \n val $instanceName = new $name \n $htmlFileSetup \n")
 
+    val currentCodeBuffer = new StringBuilder()
+
     var resCount = 0
     var assignCount = 0
 
@@ -295,11 +297,9 @@ object WorksheetSourceProcessorWithHTML {
     }
 
     rootChildren foreach { child =>
-      if (!child.isInstanceOf[ScExpression]) {
-
-        val src = child.getText
-        //objectRes append s"""$htmlOutputId.println(\"\"\"<pre>$src</pre>\"\"\") \n"""
-      }
+//      val cleaned = child.getText.replaceAll("\"\"\"","\\\"\\\"\\\"")
+//      currentCodeBuffer append cleaned
+      if (!child.getText.contains("\"\"\"")) currentCodeBuffer append child.getText
       child match {
         case tpe: ScTypeAlias =>
           withPrecomputeLines(tpe, {
@@ -370,6 +370,12 @@ object WorksheetSourceProcessorWithHTML {
           classRes append s"def $resName = $END_GENERATED_MARKER${expr.getText}${insertNlsFromWs(expr)}"
           objectRes append (printMethodName + "(\"res" + startText + resCount + ": \" + " + withTempVar(resName) + ")\n")
 
+          //print out all code until now
+          if (currentCodeBuffer.nonEmpty) {
+            objectRes append s"""$htmlOutputId.println(\"\"\"<pre>${currentCodeBuffer.toString()}</pre>\"\"\") \n"""
+            currentCodeBuffer.clear()
+          }
+
           //now add the statement that adds to the html file
           objectRes append s"""$htmlOutputId.println($instanceName.$resName.toString) \n"""
 
@@ -385,9 +391,10 @@ object WorksheetSourceProcessorWithHTML {
 
     insertUntouched(postDeclarations)
 
-    //new File("Blah").renameTo()
-
     classRes append "}"
+    if (currentCodeBuffer.nonEmpty)
+      objectRes append s"""$htmlOutputId.println(\"\"\"<pre>${currentCodeBuffer.toString()}</pre>\"\"\") \n"""
+
     objectRes append s"""$htmlFileId.renameTo(new File("/tmp/worksheet.html")) \n"""
     objectRes append s"""$htmlOutputId.println("</body></html>") \n"""
     objectRes append s"$htmlOutputId.close() \n"
