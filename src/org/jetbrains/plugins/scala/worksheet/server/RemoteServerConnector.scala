@@ -30,6 +30,8 @@ import org.jetbrains.plugins.scala.worksheet.ui.WorksheetEditorPrinter
 import org.jetbrains.plugins.scala.worksheet.actions.WorksheetFileHook
 import com.intellij.openapi.application.ApplicationManager
 
+import _root_.scala.io.Source
+
 /**
   * User: Dmitry Naydanov
  * Date: 1/28/14
@@ -210,9 +212,14 @@ object RemoteServerConnector {
     
     override def isCanceled: Boolean = false
     override def deleted(module: File) {}
-    override def processed(source: File) {}
+    override def processed(source: File): Unit = {
+      val txt = Source.fromFile(source).getLines().mkString("\n")
+      println(txt)
+    }
     override def generated(source: File, module: File, name: String) {}
-    override def debug(text: String) {}
+    override def debug(text: String): Unit = {
+      println(text)
+    }
 
     override def progress(text: String, done: Option[Float]) {
       consumer.progress(text, done)

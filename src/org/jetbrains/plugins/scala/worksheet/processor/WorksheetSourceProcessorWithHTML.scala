@@ -19,10 +19,10 @@ import com.intellij.openapi.util.Key
 import org.jetbrains.plugins.scala.worksheet.actions.RunWorksheetAction
 
 /**
- * User: Dmitry Naydanov
+ * User: Dmitry Naydanov, Sebastian Riedel
  * Date: 1/15/14
  */
-object WorksheetSourceProcessor {
+object WorksheetSourceProcessorWithHTML {
   val END_TOKEN_MARKER = "###worksheet###$$end$$"
   val END_OUTPUT_MARKER = "###worksheet###$$end$$!@#$%^&*(("
   val END_GENERATED_MARKER = "/* ###worksheet### generated $$end$$ */"
@@ -87,7 +87,15 @@ object WorksheetSourceProcessor {
     val startText = ""
     
     val classRes = new StringBuilder(s"final class $classPrologue { \n")
-    val objectRes = new StringBuilder(s"def main($runPrinterName: Any) { \n val $instanceName = new $name \n")
+    val htmlFileId = "htmlFile"
+    val htmlOutputId = "htmlOut"
+    val htmlFileSetup =
+      s"""
+        |import java.io.{PrintStream, File}
+        |val $htmlFileId = new File("/tmp/worksheet.html")
+        |val $htmlOutputId = new PrintStream($htmlFileId)
+      """.stripMargin
+    val objectRes = new StringBuilder(s"def main($runPrinterName: Any) { \n val $instanceName = new $name \n $htmlFileSetup \n")
     
     var resCount = 0
     var assignCount = 0
@@ -329,6 +337,11 @@ object WorksheetSourceProcessor {
 
         classRes append s"def $resName = $END_GENERATED_MARKER${expr.getText}${insertNlsFromWs(expr)}" 
         objectRes append (printMethodName + "(\"res" + startText + resCount + ": \" + " + withTempVar(resName) + ")\n")
+
+        //now add the statement that adds to the html file
+        objectRes append s"""$htmlOutputId.println("<pre>"+$instanceName.$resName.toString + "</pre>") \n"""
+
+
         appendPsiLineInfo(expr, lineNums)
         
         resCount += 1
@@ -340,6 +353,7 @@ object WorksheetSourceProcessor {
     insertUntouched(postDeclarations)
 
     classRes append "}"
+    objectRes append s"$htmlOutputId.close() \n"
     objectRes append (printMethodName + "(\"" + END_OUTPUT_MARKER + "\")\n") append "} \n }"
 
     val codeResult = objectPrologue + importStmts.mkString(";") + classRes.toString() + "\n\n\n" + objectRes.toString()
