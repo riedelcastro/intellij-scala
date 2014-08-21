@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <script type="text/javascript">
+        var last = ""
+        setInterval(function () {
+                var href = document.URL;
+                var xmlhttp = new XMLHttpRequest();
+                xmlhttp.open("GET", href, false);
+                xmlhttp.send();
+                var changed = last != "" && last != xmlhttp.responseText;
+                //console.log("Changed: " + changed);
+                if (changed) {
+                    window.location = href;
+                }
+                last = xmlhttp.responseText;
+            },
+            100);
+    </script>
+</head>
+
+<body>
+    <h1>Yooo!</h1>Blah Blub blah test yo blah blah test blah blub sdf 
+</body>
+
+</html>

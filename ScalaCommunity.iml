@@ -37,6 +37,15 @@
     <orderEntry type="library" name="community-plugins" level="project" />
     <orderEntry type="library" name="nailgun" level="project" />
     <orderEntry type="module" module-name="ScalaRunner" />
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/SDK/lib/actuarius_2.10.0-0.2.6.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
   </component>
 </module>
 
