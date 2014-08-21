@@ -339,7 +339,7 @@ object WorksheetSourceProcessorWithHTML {
         objectRes append (printMethodName + "(\"res" + startText + resCount + ": \" + " + withTempVar(resName) + ")\n")
 
         //now add the statement that adds to the html file
-        objectRes append s"""$htmlOutputId.println("<pre>"+$instanceName.$resName.toString + "</pre>") \n"""
+        objectRes append s"""$htmlOutputId.println($instanceName.$resName.toString) \n"""
 
 
         appendPsiLineInfo(expr, lineNums)
